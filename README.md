@@ -59,6 +59,38 @@ Omit `--headless` to run headed (visible browser).
 Results: 140 pass  0 fail  0 bug  0 skip  (140 total)
 ```
 
+## Files
+
+```
+~/vibium-python-test/
+├── test_vibium_python.py   # full regression suite
+├── SKILL.md                # Claude Code skill definition
+├── SKILL-README.md         # skill description
+└── README.md               # this file
+```
+
+## Installation (skill)
+
+```sh
+git clone https://github.com/lana-20/vibium-python-test ~/vibium-python-test
+mkdir -p ~/.claude/skills/vibium-python-test
+cp ~/vibium-python-test/SKILL.md ~/.claude/skills/vibium-python-test/
+```
+
+Then add to `~/.claude/CLAUDE.md`:
+```
+- `/vibium-python-test` — Vibium Python API regression suite (140 tests)
+```
+
+## Usage
+
+```
+/vibium-python-test              # run full suite headless
+/vibium-python-test --headed     # run with visible browser
+/vibium-python-test element      # highlight Element section
+/vibium-python-test capture      # highlight capture.* section
+```
+
 ## Bugs found
 
 | # | Method(s) | Detail |
