@@ -20,6 +20,7 @@ cd ~/vibium-python-test
 | File | Purpose |
 |---|---|
 | `test_vibium_python.py` | Regression suite — 140 tests across 22 sections |
+| `bug_hardening.py` | Bug hardening suite — B1–B4 across 5 sites, 107 probes |
 
 ## Environment
 
@@ -38,6 +39,11 @@ VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x
 **Full suite (headed, for visual debugging):**
 ```sh
 VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x64/bin/vibium python3 test_vibium_python.py
+```
+
+**Bug hardening suite:**
+```sh
+VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x64/bin/vibium python3 bug_hardening.py --headless
 ```
 
 ## Sections covered
@@ -93,6 +99,12 @@ Confirmed across multiple runs:
 | Pass | Fail | Bug | Skip | Total |
 |---|---|---|---|---|
 | 140 | 0 | 0 | 0 | 140 |
+
+**Bug hardening baseline:**
+
+| Confirmed | Total probes | Unexpected |
+|---|---|---|
+| 68 | 107 | 0 |
 
 Note: two daemon-thread `TimeoutError` lines print to stderr during `capture.dialog` tests. These are expected — the background `evaluate("alert(...)")` threads are cancelled when the browser stops. They do not affect test results.
 

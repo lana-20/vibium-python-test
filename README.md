@@ -64,9 +64,23 @@ Results: 140 pass  0 fail  0 bug  0 skip  (140 total)
 ```
 ~/vibium-python-test/
 ├── test_vibium_python.py   # full regression suite
+├── bug_hardening.py        # bug hardening suite — B1–B4 across 5 sites (68/107 confirmed)
 ├── SKILL.md                # Claude Code skill definition
 ├── SKILL-README.md         # skill description
 └── README.md               # this file
+```
+
+## Bug hardening
+
+```sh
+VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x64/bin/vibium \
+  python3 bug_hardening.py --headless
+```
+
+Hardens B1–B4 across 5 sites with multiple element types and dialog variants:
+
+```
+Total confirmed: 68 / 107  unexpected: 0
 ```
 
 ## Installation (skill)
