@@ -10,7 +10,7 @@ Runs a single-file Python test suite — no pytest, no fixtures, just `python3`.
 
 ## Coverage
 
-140 tests across 22 sections covering the full sync API:
+141 tests across 22 sections covering the full sync API:
 Browser · Page (navigation, finding, eval, screenshots, viewport, a11y, waiting, events, network, capture, scroll, frames) · Element · Keyboard · Mouse · Touch · Clock · BrowserContext · Recording · Errors · Multi-page
 
 ## Usage
@@ -24,4 +24,4 @@ Browser · Page (navigation, finding, eval, screenshots, viewport, a11y, waiting
 
 ## Baseline
 
-140 pass / 0 fail / 0 bug / 0 skip
+140 pass / 0 fail / 1 bug / 0 skip  (141 total)

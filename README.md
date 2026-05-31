@@ -6,7 +6,7 @@ Vibium Python API regression suite for [`vibium==26.3.18`](https://github.com/Vi
 
 | File | Description |
 |---|---|
-| `test_vibium_python.py` | Full API regression suite — 140 tests across 22 sections |
+| `test_vibium_python.py` | Full API regression suite — 141 tests across 22 sections |
 
 ## Requirements
 
@@ -26,7 +26,7 @@ Omit `--headless` to run headed (visible browser).
 
 ## Coverage
 
-140 tests across 22 sections:
+141 tests across 22 sections:
 
 | Section | Tests | Key methods |
 |---|---|---|
@@ -34,7 +34,7 @@ Omit `--headless` to run headed (visible browser).
 | Page: Navigation | 7 | `go`, `title`, `url`, `content`, `back`, `forward`, `reload`, `set_content` |
 | Page: Finding | 10 | `find` (CSS / role / text / role+text / xpath / placeholder / label / testid), `find_all` |
 | Page: Evaluation & Scripts | 6 | `evaluate`, `add_script`, `add_style` |
-| Page: Screenshots & PDF | 4 | `screenshot`, `screenshot(full_page)`, `pdf` |
+| Page: Screenshots & PDF | 5 | `screenshot`, `screenshot(full_page)`, `screenshot→file`, `screenshot large payload (B5)`, `pdf` |
 | Page: Viewport & Emulation | 6 | `set_viewport`, `viewport`, `emulate_media`, `set_geolocation`, `window` |
 | Page: Accessibility | 2 | `a11y_tree`, `a11y_tree(everything=True)` |
 | Page: Waiting | 4 | `wait`, `wait_until.loaded`, `wait_until.url`, `wait_until(fn)` |
@@ -56,7 +56,7 @@ Omit `--headless` to run headed (visible browser).
 ## Baseline
 
 ```
-Results: 140 pass  0 fail  0 bug  0 skip  (140 total)
+Results: 140 pass  0 fail  1 bug  0 skip  (141 total)
 ```
 
 ## Files
@@ -93,7 +93,7 @@ cp ~/vibium-python-test/SKILL.md ~/.claude/skills/vibium-python-test/
 
 Then add to `~/.claude/CLAUDE.md`:
 ```
-- `/vibium-python-test` — Vibium Python API regression suite (140 tests)
+- `/vibium-python-test` — Vibium Python API regression suite (141 tests)
 ```
 
 ## Usage
@@ -113,3 +113,4 @@ Then add to `~/.claude/CLAUDE.md`:
 | B2 | `page.wait_until(fn)` | Requires a full JS function expression `"() => ..."` — a bare boolean expression always times out |
 | B3 | `capture.dialog(fn)` deadlock | `fn` calling `page.evaluate("alert(...)")` deadlocks: `alert()` blocks the browser until the dialog is handled, but the dialog capture future isn't awaited yet when `fn()` is called synchronously. Fix: fire `evaluate` in a daemon thread inside `fn` |
 | B4 | `element.bounds()` | Returns a `BoundingBox` dataclass, not a dict — `"width" in bb` raises `TypeError`; use `bb.width`, `bb.x` etc. |
+| B5 | `page.screenshot(full_page=True)` | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` then raises `ValueError`. Requires large viewport + full-page + content-heavy page. Filed: [#168](https://github.com/VibiumDev/vibium/issues/168) |
