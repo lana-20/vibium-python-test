@@ -426,9 +426,23 @@ def section_page_media() -> None:
             assert pdf[:4] == b"%PDF"
         with_page(fn)
 
+    def test_screenshot_large_payload():
+        def fn(p):
+            p.set_viewport({"width": 1920, "height": 1080})
+            p.go("https://demo.playwright.dev/todomvc")
+            for i in range(20):
+                el = p.find(".new-todo")
+                el.type(f"Todo item number {i+1} with some extra text to inflate the page")
+                p.keyboard.press("Enter")
+            png = p.screenshot(full_page=True)
+            assert isinstance(png, bytes) and len(png) > 1000
+        with_page(fn)
+
     run_test("page.screenshot() — bytes", test_screenshot_bytes)
     run_test("page.screenshot(full_page=True)", test_screenshot_full_page)
     run_test("page.screenshot() — save to file", test_screenshot_save)
+    run_test("page.screenshot() — large payload (>64KB buffer overflow)", test_screenshot_large_payload,
+             known_bug="PNG payload exceeds asyncio 64KB readline limit → ConnectionError + ValueError on stop()")
     run_test("page.pdf()", test_pdf)
 
 
