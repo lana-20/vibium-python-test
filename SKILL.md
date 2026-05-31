@@ -6,7 +6,7 @@ description: Run the Vibium Python API regression suite. Tests all public method
 # Vibium Python API Test Suite
 
 Tests all public methods in the vibium Python language bindings (`vibium==26.3.18`, sync API).
-140 tests across 22 sections in a single self-contained runner.
+141 tests across 22 sections in a single self-contained runner.
 
 ## Project directory
 
@@ -19,7 +19,7 @@ cd ~/vibium-python-test
 
 | File | Purpose |
 |---|---|
-| `test_vibium_python.py` | Regression suite — 140 tests across 22 sections |
+| `test_vibium_python.py` | Regression suite — 141 tests across 22 sections |
 | `bug_hardening.py` | Bug hardening suite — B1–B4 across 5 sites, 107 probes |
 
 ## Environment
@@ -54,7 +54,7 @@ VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x
 | Page: Navigation | 7 | go, title, url, content, back, forward, reload, set_content |
 | Page: Finding | 10 | find (CSS/role/text/role+text/xpath/placeholder/label/testid), find_all (CSS/role) |
 | Page: Evaluation & Scripts | 6 | evaluate (number/string/object), add_script, add_style, eval() alias absent |
-| Page: Screenshots & PDF | 4 | screenshot, screenshot(full_page), screenshot→file, pdf |
+| Page: Screenshots & PDF | 5 | screenshot, screenshot(full_page), screenshot→file, screenshot large payload (B5), pdf |
 | Page: Viewport & Emulation | 6 | set_viewport, viewport, emulate_media (color_scheme/reduced_motion), set_geolocation, window |
 | Page: Accessibility | 2 | a11y_tree, a11y_tree(everything=True) |
 | Page: Waiting | 4 | wait, wait_until.loaded, wait_until.url, wait_until(fn_string) |
@@ -89,7 +89,7 @@ Browser                      8      8     0     0    0
 Page: Navigation             7      7     0     0    0
 ...
 ──────────────────────────────────────────────────────
-TOTAL                        140    140   0     0    0
+TOTAL                        141    140   1     0    0
 ```
 
 ## Baseline
@@ -98,7 +98,7 @@ Confirmed across multiple runs:
 
 | Pass | Fail | Bug | Skip | Total |
 |---|---|---|---|---|
-| 140 | 0 | 0 | 0 | 140 |
+| 140 | 0 | 1 | 0 | 141 |
 
 **Bug hardening baseline:**
 
@@ -116,6 +116,7 @@ Note: two daemon-thread `TimeoutError` lines print to stderr during `capture.dia
 | B2 | `page.wait_until(fn)` | Requires a full function expression `"() => ..."` — bare boolean expression like `"document.readyState === 'complete'"` always times out |
 | B3 | `capture.dialog(fn)` deadlock | `fn` that calls `page.evaluate("alert(...)")` deadlocks: alert blocks browser until dialog is handled, but the dialog capture future hasn't been awaited yet when `fn()` is called synchronously. Fix: fire `evaluate` in a daemon thread inside `fn` |
 | B4 | `element.bounds()` returns dataclass | `BoundingBox` is a Python dataclass, not a dict — `"width" in bb` raises `TypeError`; use `bb.width`, `bb.x` etc. |
+| B5 | `page.screenshot(full_page=True)` buffer overflow | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` raises `ValueError`. Needs large viewport + full-page + content-heavy page. [#168](https://github.com/VibiumDev/vibium/issues/168) |
 
 ## Input
 
