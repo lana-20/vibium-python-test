@@ -116,7 +116,7 @@ Note: two daemon-thread `TimeoutError` lines print to stderr during `capture.dia
 | B2 | `page.wait_until(fn)` | Requires a full function expression `"() => ..."` — bare boolean expression like `"document.readyState === 'complete'"` always times out |
 | B3 | `capture.dialog(fn)` deadlock | `fn` that calls `page.evaluate("alert(...)")` deadlocks: alert blocks browser until dialog is handled, but the dialog capture future hasn't been awaited yet when `fn()` is called synchronously. Fix: fire `evaluate` in a daemon thread inside `fn` |
 | B4 | `element.bounds()` returns dataclass | `BoundingBox` is a Python dataclass, not a dict — `"width" in bb` raises `TypeError`; use `bb.width`, `bb.x` etc. |
-| B5 | `page.screenshot(full_page=True)` buffer overflow | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` raises `ValueError`. Needs large viewport + full-page + content-heavy page. [#168](https://github.com/VibiumDev/vibium/issues/168) |
+| B5 | `page.screenshot(full_page=True)` buffer overflow | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` raises `ValueError`. Needs large viewport + full-page + content-heavy page. Duplicate of [#110](https://github.com/VibiumDev/vibium/issues/110); fix in v26.5.31. [#168](https://github.com/VibiumDev/vibium/issues/168) (closed) |
 
 ## Input
 

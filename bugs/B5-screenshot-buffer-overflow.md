@@ -1,5 +1,9 @@
 # page.screenshot(full_page=True) overflows asyncio 64KB readline buffer, crashing connection on large PNG payloads (Python Client)
 
+> **Status:** CLOSED — duplicate of [VibiumDev/vibium#110](https://github.com/VibiumDev/vibium/issues/110).
+> Fix merged in PR #166, ships in **v26.5.31**. Reproduced on v26.3.18 (pre-fix).
+> Filed as [VibiumDev/vibium#168](https://github.com/VibiumDev/vibium/issues/168).
+
 **Package:** `vibium` Python client
 **Version:** 26.3.18
 **Platform:** macOS x86_64 (Darwin 25.5.0)
