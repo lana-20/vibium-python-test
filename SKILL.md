@@ -5,7 +5,7 @@ description: Run the Vibium Python API regression suite. Tests all public method
 
 # Vibium Python API Test Suite
 
-Tests all public methods in the vibium Python language bindings (`vibium==26.3.18`, sync API).
+Tests all public methods in the vibium Python language bindings (`vibium==26.5.31`, sync API).
 141 tests across 22 sections in a single self-contained runner.
 
 ## Project directory
@@ -53,7 +53,7 @@ VIBIUM_BIN_PATH=/usr/local/lib/node_modules/vibium/node_modules/@vibium/darwin-x
 | Browser | 8 | start, stop, repr, new_page, page, pages, new_context, on_page, start(headless) |
 | Page: Navigation | 7 | go, title, url, content, back, forward, reload, set_content |
 | Page: Finding | 10 | find (CSS/role/text/role+text/xpath/placeholder/label/testid), find_all (CSS/role) |
-| Page: Evaluation & Scripts | 6 | evaluate (number/string/object), add_script, add_style, eval() alias absent |
+| Page: Evaluation & Scripts | 6 | evaluate (number/string/object), add_script, add_style, eval() alias (v26.5.31) |
 | Page: Screenshots & PDF | 5 | screenshot, screenshot(full_page), screenshot→file, screenshot large payload (B5), pdf |
 | Page: Viewport & Emulation | 6 | set_viewport, viewport, emulate_media (color_scheme/reduced_motion), set_geolocation, window |
 | Page: Accessibility | 2 | a11y_tree, a11y_tree(everything=True) |
@@ -94,11 +94,10 @@ TOTAL                        141    140   1     0    0
 
 ## Baseline
 
-Confirmed across multiple runs:
-
-| Pass | Fail | Bug | Skip | Total |
-|---|---|---|---|---|
-| 140 | 0 | 1 | 0 | 141 |
+| Version | Pass | Fail | Bug | Skip | Total |
+|---|---|---|---|---|---|
+| v26.3.18 | 140 | 0 | 1 | 0 | 141 |
+| v26.5.31 | 141 | 0 | 0 | 0 | 141 |
 
 **Bug hardening baseline:**
 
@@ -108,15 +107,17 @@ Confirmed across multiple runs:
 
 Note: two daemon-thread `TimeoutError` lines print to stderr during `capture.dialog` tests. These are expected — the background `evaluate("alert(...)")` threads are cancelled when the browser stops. They do not affect test results.
 
+**v26.5.31 clock guard:** `clock.*` methods now error with `clock not installed` if called before `clock.install()`. Tests that call `set_fixed_time`, `pause_at`, or `set_system_time` must call `clock.install()` first.
+
 ## Bugs found during workout
 
-| Bug | Method(s) | Detail |
-|---|---|---|
-| B1 | `page.evaluate()` alias | `test_basic.py` in the repo calls `vibe.eval()` which does not exist on Page; correct name is `evaluate()` |
-| B2 | `page.wait_until(fn)` | Requires a full function expression `"() => ..."` — bare boolean expression like `"document.readyState === 'complete'"` always times out |
-| B3 | `capture.dialog(fn)` deadlock | `fn` that calls `page.evaluate("alert(...)")` deadlocks: alert blocks browser until dialog is handled, but the dialog capture future hasn't been awaited yet when `fn()` is called synchronously. Fix: fire `evaluate` in a daemon thread inside `fn` |
-| B4 | `element.bounds()` returns dataclass | `BoundingBox` is a Python dataclass, not a dict — `"width" in bb` raises `TypeError`; use `bb.width`, `bb.x` etc. |
-| B5 | `page.screenshot(full_page=True)` buffer overflow | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` raises `ValueError`. Needs large viewport + full-page + content-heavy page. Duplicate of [#110](https://github.com/VibiumDev/vibium/issues/110); fix in v26.5.31. [#168](https://github.com/VibiumDev/vibium/issues/168) (closed) |
+| Bug | Method(s) | v26.5.31 status | Detail |
+|---|---|---|---|
+| B1 | `page.eval()` alias | **FIXED** (#144/#166) | Added as alias for `evaluate()` in v26.5.31; test flipped from BUG to PASS |
+| B2 | `page.wait_until(fn)` | **FIXED** (#123/#163) | Bare expressions now accepted; `"() => ..."` form still works |
+| B3 | `capture.dialog(fn)` deadlock | Still present | `fn` must fire `evaluate("alert(...)")` in a daemon thread; direct call deadlocks |
+| B4 | `element.bounds()` returns dataclass | **FIXED** (#147/#166) | `BoundingBox` now supports dict-style access (`bb["width"]`, `"width" in bb`) alongside attribute access |
+| B5 | `page.screenshot(full_page=True)` buffer overflow | **FIXED** (#110/#166) | Large pipe messages no longer crash with `LimitOverrunError` |
 
 ## Input
 

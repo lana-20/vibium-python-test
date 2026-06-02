@@ -1,6 +1,6 @@
 # vibium-python-test
 
-Vibium Python API regression suite for [`vibium==26.3.18`](https://github.com/VibiumDev/vibium). Single-file runner, no test framework required — just Python 3.9+.
+Vibium Python API regression suite for [`vibium==26.5.31`](https://github.com/VibiumDev/vibium). Single-file runner, no test framework required — just Python 3.9+.
 
 ## File
 
@@ -33,7 +33,7 @@ Omit `--headless` to run headed (visible browser).
 | Browser | 8 | `start`, `stop`, `new_page`, `page`, `pages`, `new_context`, `on_page` |
 | Page: Navigation | 7 | `go`, `title`, `url`, `content`, `back`, `forward`, `reload`, `set_content` |
 | Page: Finding | 10 | `find` (CSS / role / text / role+text / xpath / placeholder / label / testid), `find_all` |
-| Page: Evaluation & Scripts | 6 | `evaluate`, `add_script`, `add_style` |
+| Page: Evaluation & Scripts | 6 | `evaluate`, `eval` (alias, v26.5.31), `add_script`, `add_style` |
 | Page: Screenshots & PDF | 5 | `screenshot`, `screenshot(full_page)`, `screenshot→file`, `screenshot large payload (B5)`, `pdf` |
 | Page: Viewport & Emulation | 6 | `set_viewport`, `viewport`, `emulate_media`, `set_geolocation`, `window` |
 | Page: Accessibility | 2 | `a11y_tree`, `a11y_tree(everything=True)` |
@@ -55,9 +55,10 @@ Omit `--headless` to run headed (visible browser).
 
 ## Baseline
 
-```
-Results: 140 pass  0 fail  1 bug  0 skip  (141 total)
-```
+| Version | Pass | Fail | Bug | Skip | Total |
+|---|---|---|---|---|---|
+| v26.3.18 | 140 | 0 | 1 | 0 | 141 |
+| v26.5.31 | 141 | 0 | 0 | 0 | 141 |
 
 ## Files
 
@@ -66,7 +67,6 @@ Results: 140 pass  0 fail  1 bug  0 skip  (141 total)
 ├── test_vibium_python.py   # full regression suite
 ├── bug_hardening.py        # bug hardening suite — B1–B4 across 5 sites (68/107 confirmed)
 ├── SKILL.md                # Claude Code skill definition
-├── SKILL-README.md         # skill description
 └── README.md               # this file
 ```
 
@@ -107,10 +107,12 @@ Then add to `~/.claude/CLAUDE.md`:
 
 ## Bugs found
 
-| # | Method(s) | Detail |
-|---|---|---|
-| B1 | `page.evaluate()` alias | `test_basic.py` in the vibium repo calls `vibe.eval()` — method does not exist; correct name is `evaluate()` |
-| B2 | `page.wait_until(fn)` | Requires a full JS function expression `"() => ..."` — a bare boolean expression always times out |
-| B3 | `capture.dialog(fn)` deadlock | `fn` calling `page.evaluate("alert(...)")` deadlocks: `alert()` blocks the browser until the dialog is handled, but the dialog capture future isn't awaited yet when `fn()` is called synchronously. Fix: fire `evaluate` in a daemon thread inside `fn` |
-| B4 | `element.bounds()` | Returns a `BoundingBox` dataclass, not a dict — `"width" in bb` raises `TypeError`; use `bb.width`, `bb.x` etc. |
-| B5 | `page.screenshot(full_page=True)` | PNG payload exceeds asyncio's 64KB `readline()` buffer → `ConnectionError: Connection closed`; `bro.stop()` then raises `ValueError`. Requires large viewport + full-page + content-heavy page. Duplicate of [#110](https://github.com/VibiumDev/vibium/issues/110); fix in v26.5.31. [#168](https://github.com/VibiumDev/vibium/issues/168) (closed) |
+| # | Method(s) | v26.5.31 | Detail |
+|---|---|---|---|
+| B1 | `page.eval()` alias | **FIXED** (#144/#166) | `eval()` added as alias for `evaluate()`; test flipped from BUG to PASS |
+| B2 | `page.wait_until(fn)` | **FIXED** (#123/#163) | Bare expressions now accepted; `"() => ..."` form still works |
+| B3 | `capture.dialog(fn)` deadlock | Still present | `fn` calling `evaluate("alert(...)")` deadlocks; fix: fire in a daemon thread inside `fn` |
+| B4 | `element.bounds()` | **FIXED** (#147/#166) | `BoundingBox` now supports dict-style access (`bb["width"]`, `"width" in bb`) alongside attribute access |
+| B5 | `page.screenshot(full_page=True)` | **FIXED** (#110/#166) | Large pipe messages no longer crash with `LimitOverrunError` |
+
+**v26.5.31 clock guard:** `clock.*` methods now error with `clock not installed` if called before `clock.install()`. Tests that call `set_fixed_time`, `pause_at`, or `set_system_time` must call `clock.install()` first.
