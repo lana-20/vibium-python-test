@@ -366,13 +366,14 @@ def section_page_eval() -> None:
             # No assertion needed — just must not throw
         with_page(fn)
 
-    # eval() is not in the API — evaluate() is the correct name
-    def test_eval_alias_bug():
+    # eval() added as alias for evaluate() in v26.5.31 (#144)
+    def test_eval_alias():
         def fn(p):
             p.go("https://example.com")
-            # The existing test_basic.py uses vibe.eval() which does not exist
             assert hasattr(p, "evaluate"), "evaluate() must exist"
-            assert not hasattr(p, "eval"), "eval() does NOT exist — existing test_basic.py has a bug"
+            assert hasattr(p, "eval"), "eval() alias must exist (added v26.5.31)"
+            result = p.eval("1 + 1")
+            assert result == 2, f"eval() alias returned unexpected value: {result}"
         with_page(fn)
 
     run_test("page.evaluate() — number", test_evaluate_number)
@@ -380,8 +381,7 @@ def section_page_eval() -> None:
     run_test("page.evaluate() — object", test_evaluate_object)
     run_test("page.add_script()", test_add_script)
     run_test("page.add_style()", test_add_style)
-    run_test("page.eval() alias absent (test_basic.py bug)", test_eval_alias_bug,
-             known_bug="test_basic.py uses vibe.eval() which does not exist on Page")
+    run_test("page.eval() alias (v26.5.31)", test_eval_alias)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1342,9 +1342,11 @@ def section_clock() -> None:
     def test_clock_set_fixed_time():
         def fn(p):
             p.go("https://example.com")
+            p.clock.install()
             p.clock.set_fixed_time("2025-01-01T00:00:00Z")
             ts = p.evaluate("Date.now()")
-            assert ts > 0
+            expected = 1735689600000  # 2025-01-01T00:00:00Z in epoch ms
+            assert ts == expected, f"expected {expected}, got {ts}"
         with_page(fn)
 
     def test_clock_set_system_time():
